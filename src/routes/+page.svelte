@@ -1,14 +1,19 @@
 <script>
 	import { onMount } from 'svelte';
-	import { imageStatus } from '$lib/components/mqttHandler';
+	import { handleConnect, mqttStatus, imageStatus } from '$lib/components/mqttHandler';
 
 	let videoEl;
 	let errorMessage;
 	let canvas;
 	let link;
 	let enabled = 0;
+	let inputBox;
 
 	$: $imageStatus, makeImageAndDownload();
+
+	async function mqttConnect() {
+		handleConnect(inputBox.value);
+	}
 
 	async function makeImageAndDownload() {
 		if (enabled < 1) {
@@ -26,18 +31,17 @@
 		try {
 			canvas = document.getElementById('canvas');
 			link = document.getElementById('link');
+			inputBox = document.getElementById('ip');
 
 			const stream = await navigator.mediaDevices.getUserMedia({
 				video: {
-					width: { ideal: 1920 },
-					height: { ideal: 1080 }
+					width: 1920,
+					height: 1080
 				}
 			});
 
 			videoEl.srcObject = stream;
 			videoEl.play();
-
-			handleConnect('ws://192.8.9.10:9001/');
 		} catch (e) {
 			console.error(e, 'camera access denied');
 			errorMessage = 'Camera Access Denied';
@@ -47,12 +51,18 @@
 
 <div class="container">
 	<h1 class="title">Camera feed</h1>
+	<div class="ipContainer">
+		<label for="ip">MQTT IP:</label>
+		<input type="text" id="ip" name="ip" /><br /><br />
+		<button class="connectButton" on:click={mqttConnect}>Connect</button>
+	</div>
+	<h2>Status: {$mqttStatus}</h2>
 	<div class="videosContainer">
-		<video bind:this={videoEl}>webcam</video>
+		<video width="1920" height="1080" bind:this={videoEl}>webcam</video>
 		<canvas id="canvas" width="1920" height="1080" />
 	</div>
 
-	<button on:click={makeImageAndDownload}> Take picture </button>
+	<button class="picButton" on:click={makeImageAndDownload}> Take picture </button>
 	<a id="link" />
 </div>
 
@@ -66,6 +76,13 @@
 
 		background-color: rgb(228, 228, 228);
 	}
+	label {
+		font-family: Arial, Helvetica, sans-serif;
+	}
+	h2{
+		text-align: center;
+		font-family: Arial, Helvetica, sans-serif;
+	}
 	.title {
 		margin-bottom: 0;
 		font-size: 52px;
@@ -78,6 +95,7 @@
 		display: flex;
 		flex-direction: row;
 		justify-content: center;
+		align-items: center;
 		gap: 5%;
 	}
 	video {
@@ -86,13 +104,22 @@
 	canvas {
 		width: 35%;
 	}
-	button {
+	button.picButton {
 		position: relative;
-		top: 5%;
+		bottom: 3%;
 		left: 6%;
 		width: 200px;
 		height: 100px;
 	}
-	canvas {
+	.ipContainer {
+		display: flex;
+		flex-flow: row;
+		justify-content: center;
+		gap: 15px;
+	}
+	button.connectButton {
+		width: auto;
+		height: auto;
+
 	}
 </style>

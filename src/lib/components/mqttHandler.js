@@ -62,8 +62,9 @@ export const handleConnect = (/** @type {string} */ ip) => {
 			if (topic == 'dt/pomki/status') {
 				let payload = JSON.parse(message.toString());
 				mqttStatus.set(payload.Status);
-			} else if (topic == 'dt/pomki/log/camtrigger') {
+			} else if (topic == 'dt/pomki/camtrigger') {
 				let payload = JSON.parse(message.toString());
+				console.log(payload.nTriggerID);
 				imageStatus.set(payload.nTriggerID);
 			}
 		});
