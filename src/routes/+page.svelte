@@ -7,24 +7,34 @@
 	let canvas;
 	let link;
 	let enabled = 0;
+	let buttonCount = 0;
 	let inputBox;
 
-	$: $imageStatus, makeImageAndDownload();
+	$: $imageStatus, makeImageAndDownload('mqtt');
 
 	async function mqttConnect() {
 		handleConnect(inputBox.value);
 	}
 
-	async function makeImageAndDownload() {
-		if (enabled < 1) {
-			enabled++;
-			return;
+	async function makeImageAndDownload(source) {
+		if (source == 'mqtt') {
+			if (enabled < 1) {
+				enabled++;
+				return;
+			}
+			let ctx = canvas.getContext('2d');
+			ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+			link.setAttribute('download', 'foto_' + $imageStatus + '.png');
+			link.setAttribute('href', canvas.toDataURL('image/png'));
+			link.click();
+		} else {
+			let ctx = canvas.getContext('2d');
+			ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+			link.setAttribute('download', 'foto_' + buttonCount + '_button.png');
+			link.setAttribute('href', canvas.toDataURL('image/png'));
+			link.click();
+			buttonCount++;
 		}
-		let ctx = canvas.getContext('2d');
-		ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-		link.setAttribute('download', 'foto_' + $imageStatus + '.png');
-		link.setAttribute('href', canvas.toDataURL('image/png'));
-		link.click();
 	}
 
 	onMount(async () => {
@@ -79,7 +89,7 @@
 	label {
 		font-family: Arial, Helvetica, sans-serif;
 	}
-	h2{
+	h2 {
 		text-align: center;
 		font-family: Arial, Helvetica, sans-serif;
 	}
@@ -120,6 +130,5 @@
 	button.connectButton {
 		width: auto;
 		height: auto;
-
 	}
 </style>
